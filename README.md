@@ -22,7 +22,7 @@ Add the following to your `Package.swift` file:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/loopwork-ai/PartialJSONDecoder.git", from: "1.0.0")
+    .package(url: "https://github.com/loopwork/PartialJSONDecoder.git", from: "1.0.0")
 ]
 ```
 
@@ -107,12 +107,12 @@ Task {
     // Get a byte stream from a URL
     let url = URL(string: "https://api.example.com/stream")!
     let (bytes, _) = try await URLSession.shared.bytes(from: url)
-    
+
     // Process each partial JSON message as it arrives
     for try await (message, isComplete) in bytes.partialJSON(decoding: Message.self) {
         // Update UI immediately with each partial message
         print("[\(message.sender)]: \(message.content)")
-        
+
         // Optionally indicate if this was from a complete JSON object
         if !isComplete {
             print("(partial message, still receiving...)")
@@ -141,7 +141,7 @@ jsonDecoder.dateDecodingStrategy = .iso8601
 // Configure a custom JSONCompleter
 let completer = JSONCompleter()
 completer.nonConformingFloatStrategy = .convertFromString(
-    positiveInfinity: "Infinity", 
+    positiveInfinity: "Infinity",
     negativeInfinity: "-Infinity",
     nan: "NaN"
 )
@@ -151,7 +151,7 @@ completer.maximumDepth = 100 // Increase maximum nesting depth (default is 64)
 Task {
     let url = URL(string: "https://api.example.com/stream")!
     let (bytes, _) = try await URLSession.shared.bytes(from: url)
-    
+
     // Pass the custom decoder and completer to the partialJSON extension
     for try await (data, isComplete) in bytes.partialJSON(
         decoding: DataPoint.self,
@@ -184,7 +184,7 @@ print(completedJSON)
 if let completion = try completer.completion(for: partialJSON, from: partialJSON.startIndex) {
     print("Needs completion: \(completion.string) at position \(completion.endIndex)")
     // Output: Needs completion: "]} at position [end of "json"]
-    
+
     // Apply the completion manually
     let manuallyCompleted = partialJSON + completion.string
     print(manuallyCompleted)
@@ -228,13 +228,13 @@ Task {
         "messages": [["role": "user", "content": "Tell me about Swift"]],
         "stream": true
     ])
-    
+
     let (stream, _) = try await URLSession.shared.bytes(for: request)
-    
+
     for try await (response, isComplete) in stream.partialJSON(decoding: LLMResponse.self) {
         // Update UI with each token as it arrives
         updateResponseText(with: response.choices.first?.delta.content)
-        
+
         // Optionally indicate if this was a complete response
         if isComplete {
             print("Response complete")
@@ -250,13 +250,13 @@ Useful for visualizing data as it loads:
 ```swift
 Task {
     let dataStream = getTimeSeriesDataStream() // Some AsyncSequence<UInt8>
-    
+
     var dataPoints: [DataPoint] = []
-    
+
     for try await (point, _) in dataStream.partialJSON(decoding: DataPoint.self) {
         // Add new point to dataset
         dataPoints.append(point)
-        
+
         // Update visualization with latest data
         updateChart(with: dataPoints)
     }
